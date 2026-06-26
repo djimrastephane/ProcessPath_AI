@@ -4,6 +4,8 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 
 **Dataset:** 7,065 cases · 86,581 events · 51 activities · 18 months (TU/e, 2017–2018)
 
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://processpathai-fejiac7urktgbcvbbwylhd.streamlit.app)
+
 ![Summary Dashboard](outputs/figures/report_dashboard.png)
 
 ---
@@ -91,6 +93,18 @@ Place the file at:
 
 ```
 data/raw/PermitLog.xes
+```
+
+---
+
+## Streamlit app
+
+**Live demo:** https://processpathai-fejiac7urktgbcvbbwylhd.streamlit.app
+
+**Run locally:**
+```bash
+pip install -r requirements.txt
+streamlit run app/app.py
 ```
 
 ---
