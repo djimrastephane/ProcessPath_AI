@@ -1,0 +1,13 @@
+activity,count
+Payment Handled,5474
+Send Reminder,991
+End trip,453
+Permit REJECTED by MISSING,38
+Permit REJECTED by EMPLOYEE,31
+Declaration SAVED by EMPLOYEE,28
+Declaration REJECTED by EMPLOYEE,28
+Permit FINAL_APPROVED by SUPERVISOR,14
+Permit SAVED by EMPLOYEE,4
+Declaration REJECTED by MISSING,2
+Request Payment,1
+Declaration REJECTED by SUPERVISOR,1

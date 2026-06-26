@@ -1,0 +1,4 @@
+model,test_accuracy,test_roc_auc,cv_roc_auc
+Logistic Regression,0.9306,0.9635,0.9569
+Random Forest,0.9108,0.9612,0.9562
+XGBoost,0.9321,0.9744,0.9677

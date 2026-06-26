@@ -1,0 +1,20 @@
+,Logistic Regression,Random Forest,XGBoost
+approval_to_trip_days,26.45,37.4,7.19
+n_reminders,18.82,19.01,15.6
+trip_duration_days,16.33,4.09,2.13
+decl_to_payment_days,7.32,3.44,2.26
+n_events,6.4,3.64,1.45
+ends_with_reminder,4.91,10.5,57.67
+n_approvals,4.88,1.67,1.32
+permit_approval_days,4.17,1.8,1.11
+starts_with_trip,3.4,0.08,1.08
+ends_with_payment,3.08,4.26,1.78
+compliance,1.67,0.28,0.9
+n_rejections,1.02,0.37,1.15
+case:RequestedBudget,0.76,3.38,1.13
+has_rfp,0.28,0.61,0.94
+case:Overspent,0.16,0.06,0.62
+case:TotalDeclared,0.14,4.41,0.99
+case:OrganizationalEntity,0.09,0.47,0.81
+budget_utilisation,0.09,1.76,0.72
+variant_rank,0.02,2.77,1.15

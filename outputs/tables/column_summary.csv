@@ -1,0 +1,174 @@
+,dtype,non_null,null,null_pct,unique
+id,object,86581,0,0.0,86581
+org:resource,object,86581,0,0.0,2
+concept:name,object,86581,0,0.0,51
+time:timestamp,"datetime64[ns, UTC]",86581,0,0.0,62741
+org:role,object,86581,0,0.0,8
+case:OrganizationalEntity,object,86581,0,0.0,29
+case:ProjectNumber,object,86581,0,0.0,885
+case:TaskNumber,object,86581,0,0.0,6
+case:dec_id_0,object,52509,34072,39.35,4451
+case:ActivityNumber,object,86581,0,0.0,167
+case:TotalDeclared,float64,86581,0,0.0,5680
+case:concept:name,object,86581,0,0.0,7065
+case:RequestedAmount_0,object,77962,8619,9.95,3181
+case:Overspent,bool,86581,0,0.0,2
+case:travel permit number,object,86581,0,0.0,6903
+case:DeclarationNumber_0,object,52509,34072,39.35,4378
+case:id,object,86581,0,0.0,7065
+case:RequestedBudget,float64,86581,0,0.0,6256
+case:BudgetNumber,object,86581,0,0.0,226
+case:OverspentAmount,float64,86581,0,0.0,6622
+case:dec_id_5,object,1184,85397,98.63,26
+case:dec_id_6,object,736,85845,99.15,14
+case:dec_id_3,object,3698,82883,95.73,121
+case:dec_id_4,object,1980,84601,97.71,51
+case:dec_id_1,object,17666,68915,79.6,999
+case:dec_id_2,object,7419,79162,91.43,309
+case:DeclarationNumber_10,object,165,86416,99.81,2
+case:RequestedAmount_16,object,90,86491,99.9,1
+case:RequestedAmount_14,object,171,86410,99.8,2
+case:RequestedAmount_15,object,90,86491,99.9,1
+case:dec_id_9,object,314,86267,99.64,5
+case:RequestedAmount_12,object,246,86335,99.72,3
+case:DeclarationNumber_14,object,90,86491,99.9,1
+case:DeclarationNumber_13,object,165,86416,99.81,2
+case:RequestedAmount_13,object,246,86335,99.72,3
+case:dec_id_7,object,421,86160,99.51,7
+case:RequestedAmount_10,object,324,86257,99.63,4
+case:DeclarationNumber_12,object,165,86416,99.81,2
+case:dec_id_8,object,367,86214,99.58,6
+case:DeclarationNumber_11,object,243,86338,99.72,3
+case:RequestedAmount_11,object,324,86257,99.63,4
+case:DeclarationNumber_16,object,90,86491,99.9,1
+case:DeclarationNumber_15,object,90,86491,99.9,1
+case:DeclarationNumber_8,object,367,86214,99.58,6
+case:DeclarationNumber_9,object,314,86267,99.64,5
+case:DeclarationNumber_4,object,1980,84601,97.71,43
+case:DeclarationNumber_5,object,1184,85397,98.63,20
+case:DeclarationNumber_6,object,736,85845,99.15,12
+case:DeclarationNumber_7,object,421,86160,99.51,7
+case:RequestedAmount_4,object,2529,84052,97.08,52
+case:DeclarationNumber_1,object,17666,68915,79.6,912
+case:RequestedAmount_3,object,5079,81502,94.13,130
+case:DeclarationNumber_2,object,7419,79162,91.43,275
+case:RequestedAmount_2,object,11023,75558,87.27,360
+case:RequestedAmount_1,object,26969,59612,68.85,1055
+case:DeclarationNumber_3,object,3698,82883,95.73,102
+case:RequestedAmount_8,object,526,86055,99.39,8
+case:RequestedAmount_7,object,580,86001,99.33,9
+case:RequestedAmount_6,object,895,85686,98.97,14
+case:RequestedAmount_5,object,1444,85137,98.33,24
+case:RequestedAmount_9,object,473,86108,99.45,7
+case:dec_id_16,object,90,86491,99.9,1
+case:dec_id_13,object,165,86416,99.81,2
+case:dec_id_12,object,165,86416,99.81,2
+case:dec_id_15,object,90,86491,99.9,1
+case:dec_id_14,object,90,86491,99.9,1
+case:dec_id_11,object,243,86338,99.72,3
+case:dec_id_10,object,165,86416,99.81,2
+case:Activity_1,object,9303,77278,89.26,3
+case:Activity_0,object,25453,61128,70.6,5
+case:RfpNumber_0,object,25453,61128,70.6,1277
+case:OrganizationalEntity_0,object,25453,61128,70.6,24
+case:Rfp_id_0,object,25453,61128,70.6,1325
+case:RfpNumber_1,object,9303,77278,89.26,348
+case:OrganizationalEntity_1,object,9303,77278,89.26,15
+case:Cost Type_1,float64,9303,77278,89.26,1
+case:Cost Type_0,float64,25453,61128,70.6,1
+case:Task_1,object,9303,77278,89.26,163
+case:Task_0,object,25453,61128,70.6,410
+case:Project_0,object,25453,61128,70.6,1
+case:Rfp_id_1,object,9303,77278,89.26,360
+case:Project_1,object,9303,77278,89.26,1
+case:Activity_3,object,1381,85200,98.4,2
+case:Activity_2,object,3604,82977,95.84,3
+case:Cost Type_3,float64,1381,85200,98.4,1
+case:Cost Type_2,float64,3604,82977,95.84,1
+case:RfpNumber_2,object,3604,82977,95.84,107
+case:RfpNumber_3,object,1381,85200,98.4,34
+case:OrganizationalEntity_2,object,3604,82977,95.84,13
+case:OrganizationalEntity_3,object,1381,85200,98.4,10
+case:Project_2,object,3604,82977,95.84,1
+case:Project_3,object,1381,85200,98.4,1
+case:Rfp_id_3,object,1381,85200,98.4,34
+case:Rfp_id_2,object,3604,82977,95.84,111
+case:Task_3,object,1381,85200,98.4,23
+case:Task_2,object,3604,82977,95.84,59
+case:Rfp_id_10,object,159,86422,99.82,2
+case:Rfp_id_11,object,81,86500,99.91,1
+case:Rfp_id_12,object,81,86500,99.91,1
+case:Rfp_id_13,object,81,86500,99.91,1
+case:Rfp_id_14,object,81,86500,99.91,1
+case:Project_11,object,81,86500,99.91,1
+case:Project_12,object,81,86500,99.91,1
+case:Project_10,object,159,86422,99.82,1
+case:Project_13,object,81,86500,99.91,1
+case:Project_14,object,81,86500,99.91,1
+case:Cost Type_7,float64,159,86422,99.82,1
+case:Cost Type_6,float64,159,86422,99.82,1
+case:Cost Type_9,float64,159,86422,99.82,1
+case:Cost Type_8,float64,159,86422,99.82,1
+case:Cost Type_5,float64,260,86321,99.7,1
+case:Cost Type_4,float64,549,86032,99.37,1
+case:OrganizationalEntity_8,object,159,86422,99.82,2
+case:OrganizationalEntity_9,object,159,86422,99.82,2
+case:Task_10,object,159,86422,99.82,2
+case:OrganizationalEntity_6,object,159,86422,99.82,2
+case:Task_11,object,81,86500,99.91,1
+case:OrganizationalEntity_7,object,159,86422,99.82,2
+case:Task_12,object,81,86500,99.91,1
+case:Task_13,object,81,86500,99.91,1
+case:Task_14,object,81,86500,99.91,1
+case:RfpNumber_10,object,159,86422,99.82,2
+case:RfpNumber_12,object,81,86500,99.91,1
+case:RfpNumber_11,object,81,86500,99.91,1
+case:OrganizationalEntity_4,object,549,86032,99.37,5
+case:Project_6,object,159,86422,99.82,1
+case:RfpNumber_14,object,81,86500,99.91,1
+case:OrganizationalEntity_5,object,260,86321,99.7,4
+case:Project_7,object,159,86422,99.82,1
+case:RfpNumber_13,object,81,86500,99.91,1
+case:Project_8,object,159,86422,99.82,1
+case:Project_9,object,159,86422,99.82,1
+case:Project_4,object,549,86032,99.37,1
+case:Project_5,object,260,86321,99.7,1
+case:Activity_12,object,81,86500,99.91,1
+case:Activity_11,object,81,86500,99.91,1
+case:Activity_14,object,81,86500,99.91,1
+case:Activity_13,object,81,86500,99.91,1
+case:Activity_10,object,159,86422,99.82,1
+case:OrganizationalEntity_14,object,81,86500,99.91,1
+case:OrganizationalEntity_13,object,81,86500,99.91,1
+case:RfpNumber_8,object,159,86422,99.82,2
+case:RfpNumber_9,object,159,86422,99.82,2
+case:RfpNumber_6,object,159,86422,99.82,2
+case:RfpNumber_7,object,159,86422,99.82,2
+case:RfpNumber_4,object,549,86032,99.37,11
+case:RfpNumber_5,object,260,86321,99.7,4
+case:OrganizationalEntity_12,object,81,86500,99.91,1
+case:OrganizationalEntity_11,object,81,86500,99.91,1
+case:OrganizationalEntity_10,object,159,86422,99.82,2
+case:Rfp_id_7,object,159,86422,99.82,2
+case:Rfp_id_8,object,159,86422,99.82,2
+case:Rfp_id_5,object,260,86321,99.7,4
+case:Rfp_id_6,object,159,86422,99.82,2
+case:Rfp_id_4,object,549,86032,99.37,11
+case:Rfp_id_9,object,159,86422,99.82,2
+case:Activity_9,object,159,86422,99.82,1
+case:Activity_8,object,159,86422,99.82,1
+case:Activity_5,object,260,86321,99.7,1
+case:Activity_4,object,549,86032,99.37,2
+case:Activity_7,object,159,86422,99.82,1
+case:Activity_6,object,159,86422,99.82,1
+case:Cost Type_13,float64,81,86500,99.91,1
+case:Cost Type_14,float64,81,86500,99.91,1
+case:Cost Type_10,float64,159,86422,99.82,1
+case:Cost Type_11,float64,81,86500,99.91,1
+case:Cost Type_12,float64,81,86500,99.91,1
+case:Task_5,object,260,86321,99.7,4
+case:Task_4,object,549,86032,99.37,10
+case:Task_9,object,159,86422,99.82,2
+case:Task_8,object,159,86422,99.82,2
+case:Task_7,object,159,86422,99.82,2
+case:Task_6,object,159,86422,99.82,2
