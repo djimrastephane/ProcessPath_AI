@@ -69,22 +69,14 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
 ### 4. Install dependencies
 
+**To run the Streamlit app only:**
 ```bash
 pip install -r requirements.txt
 ```
 
-`requirements.txt` pins the full stack:
-
-```
-pm4py==2.7.22.5
-pandas>=2.0
-numpy>=2.0
-matplotlib>=3.7
-scikit-learn>=1.3
-xgboost>=3.0
-shap>=0.52
-jupyter>=1.0
-ipykernel>=6.25
+**To run the notebooks** (includes pm4py, jupyter):
+```bash
+pip install -r requirements-dev.txt
 ```
 
 ### 5. Get the data
