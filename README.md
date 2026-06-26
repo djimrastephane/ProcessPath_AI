@@ -1,76 +1,166 @@
 # ProcessPath_AI
 
-Process mining and workflow analytics on the BPI Challenge 2020 Travel Permit event log.
+Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck analysis, conformance checking, SHAP-explained early warning model, and temporal cross-validation.
 
-## Dataset
+**Dataset:** 7,065 cases · 86,581 events · 51 activities · 18 months (TU/e, 2017–2018)
 
-**BPI Challenge 2020 — Travel Permit Log (`PermitLog.xes`)**
+---
 
-Real-life event log from the reimbursement and travel permit process at Eindhoven University of Technology (TU/e). Covers 2017–2018 across multiple departments. Events capture permit submissions, approvals, rejections, and reimbursement requests by staff.
+## Results summary
 
-## Project Roadmap
+| Finding | Detail |
+|---|---|
+| 991 cases (14%) permanently stuck | Last event is `Send Reminder` — median duration 134d vs 63d for resolved cases |
+| 17.1% travel-ordering violations | 746 Type A (departed before permit submitted), 583 Type B (departed before approval) |
+| Scheduling dominates duration | 69% of case duration is voluntary employee scheduling, not admin processing |
+| Early warning model at k=8 events | AUC 0.967 (temporal CV) — deployable at `Permit FINAL_APPROVED` |
+| Data drift confirmed | `elapsed_days` feature halved from 2017Q1 → 2018Q4; k-fold overstates AUC by +0.048 |
 
-| Phase | Notebook | Status |
-|-------|----------|--------|
-| 1 — Exploration | `01_initial_exploration.ipynb` | Active |
-| 2 — Process discovery | `02_process_structure.ipynb`, `03_process_discovery.ipynb` | Active |
-| 3 — Bottleneck analysis | `04_bottleneck_analysis.ipynb` | Planned |
-| 4 — Conformance checking | `05_conformance_analysis.ipynb` | Planned |
-| 5 — Predictive process analytics | `06_predictive_analytics.ipynb` | Planned |
-| 6 — Interactive application | Streamlit app in `app/` | Planned |
+---
 
-## Current Phase
+## Notebooks
 
-**Phase 1 & 2:** Data exploration and process structure analysis using PM4Py and pandas. No ML, no dashboards — only validated, reliable exploratory outputs.
+Run in order. Each notebook is self-contained and writes its outputs to `outputs/`.
 
-## Repository Structure
+| # | Notebook | What it does |
+|---|---|---|
+| 01 | `01_initial_exploration.ipynb` | Case/event stats, variant frequency, time coverage |
+| 02 | `02_process_structure.ipynb` | Directly-Follows Graph, transition matrix, happy path |
+| 03 | `03_process_discovery.ipynb` | Inductive Miner and Heuristics Miner Petri nets |
+| 04 | `04_bottleneck_analysis.ipynb` | Waiting/service time split, stuck cases, scheduling vs admin delay |
+| 05 | `05_conformance_analysis.ipynb` | Token replay fitness, travel-ordering violations by department |
+| 06 | `06_predictive_analytics.ipynb` | XGBoost / RF / LogReg — AUC 0.974 on complete features |
+| 07 | `07_shap_prefix.ipynb` | SHAP explanations + prefix-based early warning (k=1–20) |
+| 08 | `08_temporal_cv.ipynb` | Temporal cross-validation, optimism bias, feature drift, concept drift |
+| 09 | `09_final_report.ipynb` | 6-panel dashboard, priority matrix, 5 findings, 5 recommendations |
+
+---
+
+## Setup
+
+### 1. Python version
+
+The notebooks require **Python 3.13**. The stack (numpy 2.x, xgboost 3.x, shap 0.52, pm4py 2.7) does not work on Python 3.12 with a standard Anaconda environment due to a numpy ABI conflict.
+
+```bash
+# Verify you have Python 3.13
+python3.13 --version
+```
+
+If you need to install it: https://www.python.org/downloads/
+
+### 2. Clone the repo
+
+```bash
+git clone https://github.com/djimrastephane/ProcessPath_AI.git
+cd ProcessPath_AI
+```
+
+### 3. Create a virtual environment
+
+```bash
+python3.13 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+```
+
+### 4. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+`requirements.txt` pins the full stack:
+
+```
+pm4py==2.7.22.5
+pandas>=2.0
+numpy>=2.0
+matplotlib>=3.7
+scikit-learn>=1.3
+xgboost>=3.0
+shap>=0.52
+jupyter>=1.0
+ipykernel>=6.25
+```
+
+### 5. Get the data
+
+The raw event log is not included in this repo (33 MB binary). Download it from the 4TU Research Data repository:
+
+**https://data.4tu.nl/articles/dataset/BPI_Challenge_2020/12703980**
+
+Place the file at:
+
+```
+data/raw/PermitLog.xes
+```
+
+---
+
+## Running the notebooks
+
+### Register the kernel (once)
+
+```bash
+python -m ipykernel install --user --name python313 --display-name "Python 3.13"
+```
+
+### Interactive (browser)
+
+```bash
+jupyter notebook
+```
+
+Open notebooks in order from the `notebooks/` directory. Select kernel **Python 3.13** when prompted.
+
+### Headless (execute all, write outputs)
+
+```bash
+for nb in notebooks/0{1..9}*.ipynb; do
+  jupyter nbconvert --to notebook --execute --inplace \
+    --ExecutePreprocessor.timeout=300 \
+    --ExecutePreprocessor.kernel_name=python313 \
+    "$nb"
+done
+```
+
+Each notebook writes figures to `outputs/figures/` and tables to `outputs/tables/`. Pre-computed outputs are already committed so you can browse results without re-running.
+
+---
+
+## Repository structure
 
 ```
 ProcessPath_AI/
-├── data/raw/PermitLog.xes
-├── notebooks/
-│   ├── 01_initial_exploration.ipynb
-│   ├── 02_process_structure.ipynb
-│   ├── 03_process_discovery.ipynb
-│   ├── 04_bottleneck_analysis.ipynb
-│   ├── 05_conformance_analysis.ipynb
-│   └── 06_predictive_analytics.ipynb
-├── src/
-│   ├── __init__.py
+├── notebooks/          # 9 analysis notebooks (run in order)
+├── src/                # Shared loader and helper functions
 │   ├── load_event_log.py
 │   ├── inspect_log.py
 │   └── process_summary.py
 ├── outputs/
-│   ├── figures/
-│   ├── tables/
-│   └── logs/
+│   ├── figures/        # 44 PNG charts (pre-computed)
+│   └── tables/         # 27 CSV tables (pre-computed)
+├── data/
+│   └── README.md       # Data download instructions
 ├── requirements.txt
-└── main.py
+└── main.py             # CLI entry point (prints dataset summary)
 ```
 
-## Installation
+---
 
-```bash
-# Create and activate a virtual environment
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+## Tech stack
 
-# Install dependencies
-pip install -r requirements.txt
-```
+| Library | Version | Purpose |
+|---|---|---|
+| pm4py | 2.7.22.5 | XES loading, DFG, Petri nets, conformance |
+| pandas / numpy | 2.x | Data wrangling |
+| scikit-learn | ≥1.3 | Preprocessing, CV, metrics |
+| xgboost | 3.x | Gradient boosting classifier |
+| shap | 0.52 | Feature attribution (TreeExplainer) |
+| matplotlib | ≥3.7 | All figures |
 
-## Execution
+---
 
-**Run the CLI summary:**
-```bash
-python main.py
-```
+## License
 
-**Run notebooks in order:**
-```bash
-jupyter notebook notebooks/01_initial_exploration.ipynb
-jupyter notebook notebooks/02_process_structure.ipynb
-jupyter notebook notebooks/03_process_discovery.ipynb
-```
-
-Outputs (CSV tables, PNG figures) are written to `outputs/`.
+MIT
