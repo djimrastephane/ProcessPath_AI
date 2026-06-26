@@ -20,6 +20,7 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 | Early warning model at k=8 events | AUC **0.810** (leakage-free) — deployable at `Permit FINAL_APPROVED` |
 | Data drift confirmed | `elapsed_days` feature halved from 2017Q1 → 2018Q4; k-fold overstates AUC by +0.048 |
 | Temporal leakage identified & corrected | `elapsed_days` alone achieves AUC 0.833 — excluded from deployed model (Notebook 10) |
+| Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
 
 ---
 
@@ -39,6 +40,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 08 | `08_temporal_cv.ipynb` | Temporal cross-validation, optimism bias, feature drift, concept drift |
 | 09 | `09_final_report.ipynb` | 6-panel dashboard, priority matrix, 5 findings, 5 recommendations |
 | 10 | `10_leakage_calibration.ipynb` | Leakage audit, ablation study, calibration (Brier score, reliability diagram) |
+| 11 | `11_remaining_time.ipynb` | Remaining time regression — XGBoost + quantile P10/P50/P90, temporal CV, SHAP |
 
 ---
 
@@ -128,9 +130,9 @@ Open notebooks in order from the `notebooks/` directory. Select kernel **Python 
 ### Headless (execute all, write outputs)
 
 ```bash
-for nb in notebooks/0{1..9}*.ipynb; do
+for nb in notebooks/[01][0-9]_*.ipynb; do
   jupyter nbconvert --to notebook --execute --inplace \
-    --ExecutePreprocessor.timeout=300 \
+    --ExecutePreprocessor.timeout=600 \
     --ExecutePreprocessor.kernel_name=python313 \
     "$nb"
 done
@@ -144,17 +146,23 @@ Each notebook writes figures to `outputs/figures/` and tables to `outputs/tables
 
 ```
 ProcessPath_AI/
-├── notebooks/          # 9 analysis notebooks (run in order)
+├── notebooks/          # 11 analysis notebooks (run in order)
 ├── src/                # Shared loader and helper functions
 │   ├── load_event_log.py
 │   ├── inspect_log.py
 │   └── process_summary.py
 ├── outputs/
-│   ├── figures/        # 44 PNG charts (pre-computed)
-│   └── tables/         # 27 CSV tables (pre-computed)
+│   ├── figures/        # 51+ PNG charts (pre-computed)
+│   └── tables/         # 32+ CSV tables (pre-computed)
+├── app/
+│   ├── app.py          # Streamlit dashboard (5 pages)
+│   └── model/
+│       ├── prefix_k8.joblib           # Early warning classifier (AUC 0.810)
+│       └── remaining_time_k8.joblib   # Remaining time regressor (MAE 12.4d)
 ├── data/
 │   └── README.md       # Data download instructions
 ├── requirements.txt
+├── requirements-dev.txt
 └── main.py             # CLI entry point (prints dataset summary)
 ```
 
