@@ -12,6 +12,7 @@ T           = ROOT / "outputs" / "tables"
 F           = ROOT / "outputs" / "figures"
 MODEL       = ROOT / "app" / "model" / "prefix_k8.joblib"
 MODEL_REG   = ROOT / "app" / "model" / "remaining_time_k8.joblib"
+MODEL_COX   = ROOT / "app" / "model" / "survival_cox_k8.joblib"
 
 st.set_page_config(
     page_title="ProcessPath_AI",
@@ -25,7 +26,7 @@ st.sidebar.title("⚙️ ProcessPath_AI")
 st.sidebar.caption("BPI Challenge 2020 · TU/e Travel Permits")
 page = st.sidebar.radio(
     "Navigate",
-    ["Overview", "Bottlenecks", "Conformance", "Early Warning", "Remaining Time"],
+    ["Overview", "Bottlenecks", "Conformance", "Early Warning", "Remaining Time", "Survival Analysis"],
     index=0,
 )
 st.sidebar.markdown("---")
@@ -43,6 +44,10 @@ def load_model():
 @st.cache_resource
 def load_reg_model():
     return joblib.load(MODEL_REG)
+
+@st.cache_resource
+def load_cox_model():
+    return joblib.load(MODEL_COX)
 
 # ══════════════════════════════════════════════════════════════════════════
 # PAGE 1 — OVERVIEW
@@ -528,3 +533,107 @@ elif page == "Remaining Time":
             .style.format({"MAE": "{:.1f}", "RMSE": "{:.1f}", "R2": "{:.3f}", "baseline_MAE": "{:.1f}"}),
             use_container_width=True,
         )
+
+# ══════════════════════════════════════════════════════════════════════════
+# PAGE 6 — SURVIVAL ANALYSIS
+# ══════════════════════════════════════════════════════════════════════════
+elif page == "Survival Analysis":
+    st.title("Survival Analysis")
+    st.caption(
+        "Kaplan-Meier curves and Cox Proportional Hazards model on all 7,065 cases — "
+        "including the 991 stuck (right-censored) cases excluded from earlier models."
+    )
+
+    cox_bundle = load_cox_model()
+    surv_dept  = load_table("survival_by_department.csv")
+    surv_summ  = load_table("survival_summary.csv")
+    cox_hr     = load_table("survival_cox_hazard_ratios.csv")
+
+    concordance   = cox_bundle["concordance_idx"]
+    n_censored    = cox_bundle["n_censored"]
+    cens_rate     = cox_bundle["censoring_rate"]
+    median_surv   = cox_bundle["median_survival"]
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total cases",          "7,065",  help="All cases including stuck")
+    col2.metric("Censored (stuck)",     f"{n_censored:,}", f"{cens_rate:.0%} of all cases",
+                delta_color="inverse")
+    col3.metric("KM median survival",   f"{median_surv:.0f}d",
+                help="Median days until completion (accounting for censoring)")
+    col4.metric("Cox concordance",      f"{concordance:.3f}",
+                help="Survival equivalent of AUC — ability to rank cases by speed of completion")
+
+    st.info(
+        "**What is right-censoring?** The 991 stuck cases (last event = `Send Reminder`) "
+        "never completed during the observation window. We know they lasted *at least* X days, "
+        "but not how much longer. Kaplan-Meier and Cox models handle this correctly; "
+        "simply excluding them would bias duration estimates downward.",
+        icon="ℹ️",
+    )
+
+    st.markdown("---")
+    st.subheader("Kaplan-Meier Survival Curves")
+    st.image(str(F / "survival_km_curves.png"), use_container_width=True)
+    st.caption(
+        "Left: overall curve — the plateau after ~200d reflects censored cases that haven't completed. "
+        "Centre: survival varies substantially across departments. "
+        "Right: cases with any rejection take significantly longer to complete (log-rank p ≈ 0)."
+    )
+
+    st.markdown("---")
+    st.subheader("Survival by Department")
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.dataframe(
+            surv_dept.rename(columns={
+                "department": "Department",
+                "n_cases": "Cases",
+                "n_censored": "Censored",
+                "censoring_rate": "Censoring rate",
+                "median_survival_days": "Median survival (days)",
+            }).style.format({
+                "Censoring rate": "{:.1%}",
+                "Median survival (days)": "{:.0f}",
+            }),
+            use_container_width=True,
+        )
+    with col_r:
+        st.markdown(
+            "Departments with high censoring rates have a large proportion of permanently stuck cases. "
+            "Median survival is estimated by Kaplan-Meier, which accounts for censoring — "
+            "it is more accurate than a simple mean of completed durations."
+        )
+
+    st.markdown("---")
+    st.subheader("Cox Proportional Hazards — Hazard Ratios")
+    col_l, col_r = st.columns([2, 1])
+    with col_l:
+        st.image(str(F / "survival_cox_hazard_ratios.png"), use_container_width=True)
+        st.caption(
+            "HR > 1 (red) = feature associated with **faster** completion. "
+            "HR < 1 (blue) = feature associated with **slower** completion / higher stuck risk. "
+            f"Concordance index: {concordance:.3f}."
+        )
+    with col_r:
+        sig_hr = cox_hr[cox_hr["p"] < 0.05].sort_values("HR", ascending=False).head(10)
+        if not sig_hr.empty:
+            st.dataframe(
+                sig_hr[["covariate", "HR", "HR_lo", "HR_hi", "p"]]
+                .rename(columns={
+                    "covariate": "Feature",
+                    "HR_lo": "HR low 95%",
+                    "HR_hi": "HR high 95%",
+                })
+                .style.format({"HR": "{:.3f}", "HR low 95%": "{:.3f}", "HR high 95%": "{:.3f}", "p": "{:.2e}"}),
+                use_container_width=True,
+            )
+
+    st.markdown("---")
+    st.subheader("KM Curves by Cox Risk Group")
+    st.image(str(F / "survival_km_risk_groups.png"), use_container_width=True)
+    st.caption(
+        "Cases ranked by their Cox partial hazard score and split into tertiles. "
+        "The high-risk group (red) shows a long tail and high censoring — "
+        "these are the cases most likely to get permanently stuck. "
+        "Low-risk cases (green) complete quickly with almost no censoring."
+    )

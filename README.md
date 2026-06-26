@@ -21,6 +21,7 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 | Data drift confirmed | `elapsed_days` feature halved from 2017Q1 → 2018Q4; k-fold overstates AUC by +0.048 |
 | Temporal leakage identified & corrected | `elapsed_days` alone achieves AUC 0.833 — excluded from deployed model (Notebook 10) |
 | Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
+| Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
 
 ---
 
@@ -41,6 +42,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 09 | `09_final_report.ipynb` | 6-panel dashboard, priority matrix, 5 findings, 5 recommendations |
 | 10 | `10_leakage_calibration.ipynb` | Leakage audit, ablation study, calibration (Brier score, reliability diagram) |
 | 11 | `11_remaining_time.ipynb` | Remaining time regression — XGBoost + quantile P10/P50/P90, temporal CV, SHAP |
+| 12 | `12_survival_analysis.ipynb` | Survival analysis — Kaplan-Meier, log-rank tests, Cox PH model, risk groups |
 
 ---
 
@@ -146,7 +148,7 @@ Each notebook writes figures to `outputs/figures/` and tables to `outputs/tables
 
 ```
 ProcessPath_AI/
-├── notebooks/          # 11 analysis notebooks (run in order)
+├── notebooks/          # 12 analysis notebooks (run in order)
 ├── src/                # Shared loader and helper functions
 │   ├── load_event_log.py
 │   ├── inspect_log.py
@@ -158,7 +160,8 @@ ProcessPath_AI/
 │   ├── app.py          # Streamlit dashboard (5 pages)
 │   └── model/
 │       ├── prefix_k8.joblib           # Early warning classifier (AUC 0.810)
-│       └── remaining_time_k8.joblib   # Remaining time regressor (MAE 12.4d)
+│       ├── remaining_time_k8.joblib   # Remaining time regressor (MAE 12.4d)
+│       └── survival_cox_k8.joblib     # Cox PH model (concordance 0.814)
 ├── data/
 │   └── README.md       # Data download instructions
 ├── requirements.txt

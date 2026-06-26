@@ -1,0 +1,2 @@
+n_total,n_completed,n_censored,censoring_rate,km_median_survival,cox_concordance,dept_logrank_p,rejection_logrank_p
+7065,6074,991,14.0%,72.4d,0.814,nan,1.33e-19
