@@ -1,0 +1,3 @@
+metric,MAE (days),RMSE (days),R2,baseline MAE,MAE skill,P10-P90 coverage,interval width (d)
+Remaining Time Prediction — k=8 (holdout),12.4,33.3,0.415,26.6,53.2%,80.8%,35.9
+Remaining Time Prediction — k=8 (temporal CV mean),12.7,29.6,0.469,,,,

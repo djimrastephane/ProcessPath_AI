@@ -7,10 +7,11 @@ import matplotlib.pyplot as plt
 import streamlit as st
 from pathlib import Path
 
-ROOT  = Path(__file__).parent.parent
-T     = ROOT / "outputs" / "tables"
-F     = ROOT / "outputs" / "figures"
-MODEL = ROOT / "app" / "model" / "prefix_k8.joblib"
+ROOT        = Path(__file__).parent.parent
+T           = ROOT / "outputs" / "tables"
+F           = ROOT / "outputs" / "figures"
+MODEL       = ROOT / "app" / "model" / "prefix_k8.joblib"
+MODEL_REG   = ROOT / "app" / "model" / "remaining_time_k8.joblib"
 
 st.set_page_config(
     page_title="ProcessPath_AI",
@@ -24,7 +25,7 @@ st.sidebar.title("⚙️ ProcessPath_AI")
 st.sidebar.caption("BPI Challenge 2020 · TU/e Travel Permits")
 page = st.sidebar.radio(
     "Navigate",
-    ["Overview", "Bottlenecks", "Conformance", "Early Warning"],
+    ["Overview", "Bottlenecks", "Conformance", "Early Warning", "Remaining Time"],
     index=0,
 )
 st.sidebar.markdown("---")
@@ -38,6 +39,10 @@ def load_table(name):
 @st.cache_resource
 def load_model():
     return joblib.load(MODEL)
+
+@st.cache_resource
+def load_reg_model():
+    return joblib.load(MODEL_REG)
 
 # ══════════════════════════════════════════════════════════════════════════
 # PAGE 1 — OVERVIEW
@@ -354,3 +359,172 @@ elif page == "Early Warning":
         st.dataframe(kfold_vs_t, use_container_width=True)
     with st.expander("Training size sensitivity"):
         st.image(str(F / "temporal_training_size.png"), use_container_width=True)
+
+# ══════════════════════════════════════════════════════════════════════════
+# PAGE 5 — REMAINING TIME
+# ══════════════════════════════════════════════════════════════════════════
+elif page == "Remaining Time":
+    st.title("Remaining Time Prediction")
+    st.caption(
+        "Predicts how many days remain in a case after observing the first 8 events. "
+        "XGBoost regression with P10 / P50 / P90 quantile uncertainty bounds."
+    )
+
+    reg_bundle = load_reg_model()
+    reg_tcv    = load_table("remaining_time_temporal_cv.csv")
+    reg_prefix = load_table("remaining_time_by_prefix.csv")
+
+    mae_cv  = reg_bundle["mae_temporal_cv"]
+    r2_cv   = reg_bundle["r2_temporal_cv"]
+    mae_h   = reg_bundle["mae_holdout"]
+    r2_h    = reg_bundle["r2_holdout"]
+    cov     = reg_bundle["coverage_p10_p90"]
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("Model",                "XGBoost k=8")
+    col2.metric("MAE (holdout)",        f"{mae_h:.1f}d",  help="Mean absolute error on 20% holdout")
+    col3.metric("MAE (temporal CV)",    f"{mae_cv:.1f}d", help="Mean across Q1–Q4 2018 expanding-window folds")
+    col4.metric("R² (temporal CV)",     f"{r2_cv:.3f}")
+    col5.metric("P10–P90 coverage",     f"{cov:.1%}",     help="Fraction of actuals inside the 80% prediction interval")
+
+    st.info(
+        "`elapsed_days` **is included** in this model — unlike the early warning classifier, "
+        "it is not leaky here. For regression the question is *how much time is left*, "
+        "and elapsed time is genuine signal about how fast the case has been moving.",
+        icon="ℹ️",
+    )
+
+    st.markdown("---")
+    st.subheader("MAE vs Prefix Length")
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.image(str(F / "remaining_time_mae_curve.png"), use_container_width=True)
+        st.caption("MAE drops and R² rises as more events are observed. k=8 is the sweet spot for early intervention.")
+    with col_r:
+        st.subheader("MAE by prefix length")
+        st.dataframe(
+            reg_prefix[["k", "MAE", "RMSE", "R2", "baseline_MAE"]]
+            .rename(columns={"k": "Prefix k", "baseline_MAE": "Baseline MAE"})
+            .style.format({"MAE": "{:.1f}", "RMSE": "{:.1f}", "R2": "{:.3f}", "Baseline MAE": "{:.1f}"}),
+            use_container_width=True,
+        )
+
+    st.markdown("---")
+    st.subheader("Predicted vs Actual  |  Residuals")
+    st.image(str(F / "remaining_time_pred_vs_actual.png"), use_container_width=True)
+    st.caption(
+        "Left: each dot is a test case. Perfect predictions lie on the red diagonal. "
+        "Right: residuals are right-skewed — the model under-predicts for very long cases, "
+        "which is common when tail durations are rare in training data."
+    )
+
+    st.markdown("---")
+    st.subheader("Quantile Prediction Intervals (P10 / P50 / P90)")
+    st.image(str(F / "remaining_time_quantile_intervals.png"), use_container_width=True)
+    st.caption(
+        f"Blue band = 80% prediction interval. Red dots = actual remaining days. "
+        f"Coverage {cov:.1%} (target 80%). Case managers see a best-case / median / worst-case estimate."
+    )
+
+    st.markdown("---")
+    st.subheader("SHAP Feature Importance")
+    st.image(str(F / "remaining_time_shap_beeswarm.png"), use_container_width=True)
+    st.caption(
+        "`elapsed_days` is the dominant driver — slow-moving cases have more time left. "
+        "`n_rejections` and rejection-flag features push remaining time up significantly."
+    )
+
+    st.markdown("---")
+    st.subheader("Single-Case Prediction")
+    st.caption("Enter case features to get a point estimate plus P10–P90 uncertainty range.")
+
+    feat_cols_r = reg_bundle["feature_cols"]
+    imputer_r   = reg_bundle["imputer"]
+    m_point     = reg_bundle["model_point"]
+    m_p10       = reg_bundle["model_p10"]
+    m_p50       = reg_bundle["model_p50"]
+    m_p90       = reg_bundle["model_p90"]
+
+    with st.form("reg_prediction_form"):
+        c1, c2, c3 = st.columns(3)
+        elapsed_d      = c1.number_input("Elapsed days so far",        0.0, 500.0, 10.0, step=1.0)
+        n_rejections_r = c2.number_input("Rejections in prefix",       0, 20, 0)
+        n_reminders_r  = c3.number_input("Send Reminders in prefix",   0, 10, 0)
+
+        c4, c5, c6 = st.columns(3)
+        n_approvals_r  = c4.number_input("Approvals in prefix",        0, 20, 2)
+        n_events_r     = c5.number_input("Events in prefix (≤8)",      1,  8, 8)
+        start_month_r  = c6.number_input("Case start month (1–12)",    1, 12, 6)
+
+        c7, c8 = st.columns(2)
+        has_reminder_r  = c7.checkbox("Has Send Reminder in prefix")
+        has_final_r     = c8.checkbox("Has Permit FINAL_APPROVED in prefix")
+
+        c9, c10 = st.columns(2)
+        has_rejected_r  = c9.checkbox("Has any REJECTED activity in prefix")
+        has_approved_r  = c10.checkbox("Has any APPROVED activity in prefix")
+
+        submitted_r = st.form_submit_button("Predict remaining time", type="primary")
+
+    if submitted_r:
+        row_r = {c: 0 for c in feat_cols_r}
+        row_r["elapsed_days"]        = elapsed_d
+        row_r["n_events_prefix"]     = n_events_r
+        row_r["n_rejections"]        = n_rejections_r
+        row_r["n_reminders"]         = n_reminders_r
+        row_r["n_approvals"]         = n_approvals_r
+        row_r["case_start_month"]    = start_month_r
+        if "has_Send_Reminder" in feat_cols_r:
+            row_r["has_Send_Reminder"] = int(has_reminder_r)
+        if "has_Permit_FINAL_APPROVED_by_SUPERVISOR" in feat_cols_r:
+            row_r["has_Permit_FINAL_APPROVED_by_SUPERVISOR"] = int(has_final_r)
+        if has_rejected_r and "has_Declaration_REJECTED_by_DIRECTOR" in feat_cols_r:
+            row_r["has_Declaration_REJECTED_by_DIRECTOR"] = 1
+        if has_approved_r and "has_Declaration_APPROVED_by_SUPERVISOR" in feat_cols_r:
+            row_r["has_Declaration_APPROVED_by_SUPERVISOR"] = 1
+
+        X_r    = pd.DataFrame([row_r])[feat_cols_r]
+        X_r_imp = pd.DataFrame(imputer_r.transform(X_r), columns=feat_cols_r)
+
+        pred_point = max(0.0, float(m_point.predict(X_r_imp)[0]))
+        pred_p10   = max(0.0, float(m_p10.predict(X_r_imp)[0]))
+        pred_p50   = max(0.0, float(m_p50.predict(X_r_imp)[0]))
+        pred_p90   = max(0.0, float(m_p90.predict(X_r_imp)[0]))
+
+        st.markdown("---")
+        rc1, rc2, rc3, rc4 = st.columns(4)
+        rc1.metric("Point estimate",  f"{pred_point:.1f} days")
+        rc2.metric("P10 (optimistic)", f"{pred_p10:.1f} days")
+        rc3.metric("P50 (median)",     f"{pred_p50:.1f} days")
+        rc4.metric("P90 (pessimistic)", f"{pred_p90:.1f} days")
+
+        # simple bar showing the interval
+        fig_r, ax_r = plt.subplots(figsize=(8, 1.8))
+        ax_r.barh(0, pred_p90 - pred_p10, left=pred_p10,
+                  height=0.4, color='#2c7bb6', alpha=0.35, label='P10–P90 interval')
+        ax_r.axvline(pred_point, color='#d7191c', linewidth=2, label=f'Point: {pred_point:.1f}d')
+        ax_r.axvline(pred_p50,   color='#2c7bb6', linewidth=2, linestyle='--',
+                     label=f'P50: {pred_p50:.1f}d')
+        ax_r.set_xlabel('Remaining days')
+        ax_r.set_yticks([])
+        ax_r.legend(loc='upper right', fontsize=8)
+        ax_r.set_title('Prediction interval')
+        plt.tight_layout()
+        st.pyplot(fig_r, use_container_width=True)
+        plt.close()
+
+        # SHAP waterfall
+        explainer_r = shap.TreeExplainer(m_point)
+        sv_r = explainer_r(X_r_imp)
+        fig_s, _ = plt.subplots(figsize=(9, 5))
+        shap.plots.waterfall(sv_r[0], max_display=12, show=False)
+        st.pyplot(fig_s, use_container_width=True)
+        plt.close()
+
+    st.markdown("---")
+    with st.expander("Temporal CV results by fold"):
+        st.dataframe(
+            reg_tcv[["fold", "n_train", "n_test", "MAE", "RMSE", "R2", "baseline_MAE"]]
+            .style.format({"MAE": "{:.1f}", "RMSE": "{:.1f}", "R2": "{:.3f}", "baseline_MAE": "{:.1f}"}),
+            use_container_width=True,
+        )
