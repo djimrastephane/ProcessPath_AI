@@ -15,8 +15,9 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 | 991 cases (14%) permanently stuck | Last event is `Send Reminder` — median duration 134d vs 63d for resolved cases |
 | 17.1% travel-ordering violations | 746 Type A (departed before permit submitted), 583 Type B (departed before approval) |
 | Scheduling dominates duration | 69% of case duration is voluntary employee scheduling, not admin processing |
-| Early warning model at k=8 events | AUC 0.967 (temporal CV) — deployable at `Permit FINAL_APPROVED` |
+| Early warning model at k=8 events | AUC **0.810** (leakage-free) — deployable at `Permit FINAL_APPROVED` |
 | Data drift confirmed | `elapsed_days` feature halved from 2017Q1 → 2018Q4; k-fold overstates AUC by +0.048 |
+| Temporal leakage identified & corrected | `elapsed_days` alone achieves AUC 0.833 — excluded from deployed model (Notebook 10) |
 
 ---
 
@@ -35,6 +36,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 07 | `07_shap_prefix.ipynb` | SHAP explanations + prefix-based early warning (k=1–20) |
 | 08 | `08_temporal_cv.ipynb` | Temporal cross-validation, optimism bias, feature drift, concept drift |
 | 09 | `09_final_report.ipynb` | 6-panel dashboard, priority matrix, 5 findings, 5 recommendations |
+| 10 | `10_leakage_calibration.ipynb` | Leakage audit, ablation study, calibration (Brier score, reliability diagram) |
 
 ---
 

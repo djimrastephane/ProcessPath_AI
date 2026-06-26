@@ -223,10 +223,18 @@ elif page == "Early Warning":
     prefix_auc = load_table("prefix_auc_results.csv")
     kfold_vs_t = load_table("temporal_vs_kfold.csv")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Model",          "XGBoost k=8")
-    col2.metric("AUC (temporal CV)", "0.967")
-    col3.metric("Threshold",      "101.1 days (P67)")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Model",                  "XGBoost k=8")
+    col2.metric("AUC — deployable",       "0.810", help="Without elapsed_days (leakage-free)")
+    col3.metric("AUC — naïve (leaky)",    "0.967", help="elapsed_days included; inflated by temporal leakage")
+    col4.metric("Threshold",              "101.1 days (P67)")
+
+    st.info(
+        "**Leakage note (Notebook 10):** `elapsed_days` alone scores AUC 0.833 — for slow cases "
+        "the 8-event window already spans enough calendar time to reveal the outcome. "
+        "The model is trained and deployed **without** `elapsed_days`. Honest AUC = **0.810**.",
+        icon="⚠️",
+    )
 
     st.markdown("---")
     col_l, col_r = st.columns(2)
@@ -257,7 +265,10 @@ elif page == "Early Warning":
 
     st.markdown("---")
     st.subheader("Single-Case Prediction")
-    st.caption("Enter prefix features for a case to get a real-time long/short prediction.")
+    st.caption(
+        "Enter the first 8 events of a case. `elapsed_days` is excluded (temporal leakage). "
+        "Model AUC = 0.810."
+    )
 
     bundle = load_model()
     model_k8  = bundle["model"]
@@ -266,31 +277,37 @@ elif page == "Early Warning":
 
     with st.form("prediction_form"):
         c1, c2, c3 = st.columns(3)
-        elapsed_days   = c1.number_input("Elapsed days (first 8 events)", 0.0, 500.0, 15.0, step=0.5)
-        n_rejections   = c2.number_input("Rejections in prefix",          0,   20,    0)
-        n_reminders    = c3.number_input("Send Reminders in prefix",      0,   10,    0)
+        n_rejections   = c1.number_input("Rejections in prefix",     0, 20, 0)
+        n_reminders    = c2.number_input("Send Reminders in prefix", 0, 10, 0)
+        n_approvals    = c3.number_input("Approvals in prefix",      0, 20, 2)
 
-        c4, c5, c6 = st.columns(3)
-        n_approvals    = c4.number_input("Approvals in prefix",           0,   20,    2)
-        n_events       = c5.number_input("Events in prefix (≤8)",        1,    8,    8)
-        budget         = c6.number_input("Requested budget (€)",          0.0, 50000.0, 1500.0, step=100.0)
+        c4, c5 = st.columns(2)
+        n_events       = c4.number_input("Events in prefix (≤8)",   1,  8, 8)
+        start_month    = c5.number_input("Case start month (1–12)", 1, 12, 6)
 
-        c7, c8 = st.columns(2)
-        has_reminder   = c7.checkbox("Has Send Reminder in prefix")
-        has_final_app  = c8.checkbox("Has Permit FINAL_APPROVED in prefix")
+        c6, c7 = st.columns(2)
+        has_reminder   = c6.checkbox("Has Send Reminder in prefix")
+        has_final_app  = c7.checkbox("Has Permit FINAL_APPROVED in prefix")
+
+        c8, c9 = st.columns(2)
+        has_rejected   = c8.checkbox("Has any REJECTED activity in prefix")
+        has_approved   = c9.checkbox("Has any APPROVED activity in prefix")
 
         submitted = st.form_submit_button("Predict", type="primary")
 
     if submitted:
         row = {c: 0 for c in feat_cols}
-        row["elapsed_days"]       = elapsed_days
         row["n_events_prefix"]    = n_events
         row["n_rejections"]       = n_rejections
         row["n_reminders"]        = n_reminders
         row["n_approvals"]        = n_approvals
-        row["case:RequestedBudget"] = budget
+        row["case_start_month"]   = start_month
         row["has_Send_Reminder"]  = int(has_reminder)
         row["has_Permit_FINAL_APPROVED_by_SUPERVISOR"] = int(has_final_app)
+        if has_rejected:
+            row["has_Declaration_REJECTED_by_DIRECTOR"] = 1
+        if has_approved:
+            row["has_Declaration_APPROVED_by_SUPERVISOR"] = 1
 
         X_row = pd.DataFrame([row])[feat_cols]
         X_imp = pd.DataFrame(imputer.transform(X_row), columns=feat_cols)

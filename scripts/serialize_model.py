@@ -1,4 +1,9 @@
-"""Train and serialize the k=8 prefix model for the Streamlit app."""
+"""Train and serialize the k=8 prefix model for the Streamlit app.
+
+elapsed_days is excluded: Notebook 10 confirmed it causes temporal leakage
+(solo AUC 0.833 — prefix window spans enough calendar time to reveal outcome).
+Honest deployable AUC without elapsed_days = 0.810.
+"""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -95,7 +100,10 @@ print(f"  {len(df):,} events, {df['case_id'].nunique():,} cases")
 print(f"Building prefix features k={PREFIX_K}...")
 feat_df = make_prefix_features(df, PREFIX_K)
 
-feat_cols = [c for c in feat_df.columns if c not in ("case_id", "is_long")]
+# Exclude elapsed_days (temporal leakage — see Notebook 10)
+LEAKY_COLS = {"elapsed_days"}
+feat_cols = [c for c in feat_df.columns
+             if c not in ("case_id", "is_long") and c not in LEAKY_COLS]
 X = feat_df[feat_cols]
 y = feat_df["is_long"]
 
@@ -113,6 +121,13 @@ model = xgb.XGBClassifier(
 )
 model.fit(X_imp, y)
 
-joblib.dump({"model": model, "imputer": imp, "feature_cols": feat_cols},
-            MODEL_DIR / "prefix_k8.joblib")
+joblib.dump({
+    "model": model,
+    "imputer": imp,
+    "feature_cols": feat_cols,
+    "excluded": list(LEAKY_COLS),
+    "honest_auc_cv": 0.810,
+    "note": "elapsed_days excluded (temporal leakage, Notebook 10)",
+}, MODEL_DIR / "prefix_k8.joblib")
 print(f"Saved to {MODEL_DIR / 'prefix_k8.joblib'}")
+print(f"Features ({len(feat_cols)}): {feat_cols}")
