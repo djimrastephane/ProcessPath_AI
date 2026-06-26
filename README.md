@@ -4,6 +4,8 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 
 **Dataset:** 7,065 cases · 86,581 events · 51 activities · 18 months (TU/e, 2017–2018)
 
+![Summary Dashboard](outputs/figures/report_dashboard.png)
+
 ---
 
 ## Results summary
