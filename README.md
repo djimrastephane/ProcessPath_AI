@@ -93,6 +93,8 @@ The raw event log is not included in this repo (33 MB binary). Download it from 
 
 **https://data.4tu.nl/articles/dataset/BPI_Challenge_2020/12703980**
 
+> van Dongen, Boudewijn (2020): BPI Challenge 2020: Travel Permit Data. Version 1. 4TU.ResearchData. dataset. https://doi.org/10.4121/uuid:ea03d361-a7cd-4f5e-83d8-5fbdf0362550
+
 Place the file at:
 
 ```
@@ -162,6 +164,14 @@ ProcessPath_AI/
 | xgboost | 3.x | Gradient boosting classifier |
 | shap | 0.52 | Feature attribution (TreeExplainer) |
 | matplotlib | ≥3.7 | All figures |
+
+---
+
+## Citation
+
+If you use this dataset, please cite:
+
+> van Dongen, Boudewijn (2020): BPI Challenge 2020: Travel Permit Data. Version 1. 4TU.ResearchData. dataset. https://doi.org/10.4121/uuid:ea03d361-a7cd-4f5e-83d8-5fbdf0362550
 
 ---
 
