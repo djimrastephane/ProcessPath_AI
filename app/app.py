@@ -79,8 +79,9 @@ if page == "Overview":
 - **991 cases (14%)** are permanently stuck — last event is `Send Reminder`; median duration **134d vs 63d** for resolved cases
 - **17.1% compliance violations** — 746 Type A (departed before permit submitted), 583 Type B (departed before approval)
 - **69% of case duration is voluntary scheduling** — admin steps process 87.8% of cases same-day
-- **Early warning model at k=8**: AUC **0.967** (temporal CV), deployable at `Permit FINAL_APPROVED`
+- **Early warning model at k=8**: AUC **0.810** (leakage-free, `elapsed_days` excluded) — deployable at `Permit FINAL_APPROVED`
 - **Data drift confirmed**: `elapsed_days` halved from 2017Q1 → 2018Q4; standard k-fold overstates AUC by +0.048
+- **Temporal leakage identified**: `elapsed_days` alone scores AUC 0.833 and was excluded from the deployed model (Notebook 10)
         """)
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -241,18 +242,38 @@ elif page == "Early Warning":
     with col_l:
         st.subheader("AUC vs Prefix Length")
         st.image(str(F / "prefix_auc_curve.png"), use_container_width=True)
+        st.caption(
+            "⚠️ These curves include `elapsed_days`. k=8 drops from 0.967 → **0.810** "
+            "when `elapsed_days` is removed (see Leakage Audit below)."
+        )
     with col_r:
         st.subheader("k-fold vs Temporal CV Bias")
         st.image(str(F / "temporal_vs_kfold_bias.png"), use_container_width=True)
+        st.caption("⚠️ Temporal CV AUC at k=8 (0.967) includes `elapsed_days`. Honest value = **0.810**.")
+
+    st.markdown("---")
+    st.subheader("Leakage Audit (Notebook 10)")
+    col_l, col_r = st.columns(2)
+    with col_l:
+        st.image(str(F / "leakage_ablation_auc.png"), use_container_width=True)
+        st.caption("Ablation: removing `elapsed_days` drops AUC by −0.157. Reminders: no change.")
+    with col_r:
+        st.image(str(F / "leakage_elapsed_days_dist.png"), use_container_width=True)
+        st.caption("`elapsed_days` alone scores AUC 0.833 — distributions are almost non-overlapping.")
+
+    st.markdown("---")
+    st.subheader("Calibration")
+    st.image(str(F / "leakage_calibration.png"), use_container_width=True)
+    st.caption("Brier score 0.066, skill score 0.70. Raw probabilities are reliable; Platt scaling not needed.")
 
     st.markdown("---")
     st.subheader("SHAP Feature Importance")
     col_l, col_r = st.columns(2)
     with col_l:
-        st.caption("Complete model")
+        st.caption("Complete model (retrospective — not deployed)")
         st.image(str(F / "shap_summary_complete.png"), use_container_width=True)
     with col_r:
-        st.caption("Prefix k=5 model")
+        st.caption("Prefix k=5 model (includes `elapsed_days`)")
         st.image(str(F / "shap_summary_prefix5.png"), use_container_width=True)
 
     st.markdown("---")
