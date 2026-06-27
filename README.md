@@ -27,6 +27,18 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 | Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
 | Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and event count are dominant drivers (Notebook 13) |
 
+### Early warning performance vs prefix length
+
+![Early warning AUC curve](outputs/figures/prefix_auc_curve.png)
+
+*AUC rises from 0.65 at the first event to 0.81 (leakage-free) by event 8 — well before the median case length of 11 events.*
+
+### SHAP feature importance — violation prediction (XGBoost AUC 0.956)
+
+![SHAP beeswarm — violation root cause](outputs/figures/violation_rca_shap.png)
+
+*Cases with many events and few approvals drive the highest violation risk; department and budget contribute less than process behaviour.*
+
 ---
 
 ## Potential applications
