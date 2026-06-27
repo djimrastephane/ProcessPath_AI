@@ -1,0 +1,3 @@
+Dataset,Domain,Cases,Events,Activities,Median duration,Early warning AUC (k=8),Remaining time MAE,Target
+BPIC 2020 — Travel permit (Notebooks 01-13),Public sector / HR,"7,065","86,581",51,72.4d,0.810,12.4d,Late completion (>90d)
+BPIC 2017 — Loan application (Notebook 14),Financial services,"31,509","475,306",24,19.1d,0.647,9.6d,Offer accepted (O_Accepted)

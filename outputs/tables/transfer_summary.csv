@@ -1,0 +1,2 @@
+n_cases,n_events_complete,n_activities,duration_median_d,outcome_pos_rate,auc_k1,auc_k8,auc_best,remaining_time_mae,remaining_time_r2,p10_p90_coverage
+31509,475306,24,19.1,0.547,0.607,0.647,0.931,9.6,0.119,0.79

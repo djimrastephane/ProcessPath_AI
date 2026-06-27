@@ -26,6 +26,7 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 | Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
 | Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
 | Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and event count are dominant drivers (Notebook 13) |
+| **Transferability — BPIC 2017 loan applications** | Same pipeline on 31,509 loans · 475K events: early warning AUC **0.647** at k=8; signal concentrates at offer-creation stage (k=10+, AUC 0.851) vs permit workflow where signal is distributed from event 1 (Notebook 14) |
 
 ### Early warning performance vs prefix length
 
@@ -72,6 +73,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 11 | `11_remaining_time.ipynb` | Remaining time regression — XGBoost + quantile P10/P50/P90, temporal CV, SHAP |
 | 12 | `12_survival_analysis.ipynb` | Survival analysis — Kaplan-Meier, log-rank tests, Cox PH model, risk groups |
 | 13 | `13_violation_root_cause.ipynb` | Violation root cause — decision tree rules, XGBoost, SHAP, department risk exposure |
+| 14 | `14_transfer_bpic2017.ipynb` | Transferability — full pipeline on BPIC 2017 loan applications; cross-domain AUC comparison |
 
 ---
 
@@ -177,14 +179,14 @@ Each notebook writes figures to `outputs/figures/` and tables to `outputs/tables
 
 ```
 ProcessPath_AI/
-├── notebooks/          # 13 analysis notebooks (run in order)
+├── notebooks/          # 14 analysis notebooks (run in order)
 ├── src/                # Shared loader and helper functions
 │   ├── load_event_log.py
 │   ├── inspect_log.py
 │   └── process_summary.py
 ├── outputs/
-│   ├── figures/        # 58+ PNG charts (pre-computed)
-│   └── tables/         # 40+ CSV tables (pre-computed)
+│   ├── figures/        # 63+ PNG charts (pre-computed)
+│   └── tables/         # 45+ CSV tables (pre-computed)
 ├── app/
 │   ├── app.py          # Streamlit dashboard (7 pages)
 │   └── model/
