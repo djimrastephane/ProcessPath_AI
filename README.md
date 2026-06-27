@@ -150,6 +150,36 @@ pip install -r requirements.txt
 streamlit run app/app.py
 ```
 
+**8 pages:**
+
+| Page | What it shows |
+|---|---|
+| Overview | Dataset KPIs, monthly volume, top 20 variants, key findings |
+| Bottlenecks | 6 tabs: Activity Impact (impact score + CSV), Process Flow (graphviz DOT), Department Impact (CSV), Avoidable Delay + **Cost Impact** (€M estimate, Plotly waterfall, CSV), **Priority Matrix** (Plotly scatter, 4 quadrants), Detail |
+| Conformance | Token replay fitness, Type A/B travel-ordering violations by department |
+| Early Warning | AUC vs prefix length, leakage audit, calibration, live k=8 prediction with SHAP waterfall |
+| Remaining Time | MAE/R² vs prefix, quantile P10/P50/P90 intervals, live regression prediction with SHAP |
+| Survival Analysis | Kaplan-Meier curves, Cox PH hazard ratios, risk group curves (right-censored stuck cases included) |
+| Violation Root Cause | Department/budget/seasonal drivers, decision tree rules, SHAP, rejection paradox, lead time analysis |
+| Process Variants | Variant frequency table, duration vs stuck rate scatter, step-by-step path inspector |
+
+A **business labels toggle** in the sidebar replaces raw event log terminology (e.g. `Permit FOR_APPROVAL by SUPERVISOR`) with executive-friendly labels (e.g. `Supervisor Review`) across all pages.
+
+**Cost model (sidebar):** set `cost_per_waiting_day`, `avg_travel_cost`, and `avg_salary_cost` — the dashboard instantly recalculates estimated annual cost of delays, avoidable savings, and per-activity cost impact in euros. Example: 69,000 avoidable days × €180/day = **€12.4M annual impact**.
+
+**The dashboard answers six operational questions:**
+
+| Question | Where to find it |
+|---|---|
+| How many cases are delayed? | Overview → stuck cases KPI; Bottlenecks → detail tab |
+| Where do delays occur? | Bottlenecks → Activity Impact tab (impact score ranking) |
+| Who owns them? | Bottlenecks → Department Impact tab (total delay by team) |
+| What is their business impact? | Bottlenecks → Avoidable Delay tab (€M cost estimate, per-activity cost) |
+| What should management fix first? | Bottlenecks → Priority Matrix tab (Act Now / Investigate / Monitor / Ignore quadrants) |
+| What savings are possible? | Bottlenecks → Avoidable Delay tab (avoidable cost KPI + savings from top bottleneck) |
+
+**CSV exports available** on Activity Impact, Department Impact, Avoidable Delay, Priority Matrix, and Process Variants tables.
+
 ---
 
 ## REST API (FastAPI)
@@ -245,7 +275,7 @@ ProcessPath_AI/
 │   ├── figures/        # 70+ PNG charts (pre-computed)
 │   └── tables/         # 50+ CSV tables (pre-computed)
 ├── app/
-│   ├── app.py          # Streamlit dashboard (7 pages)
+│   ├── app.py          # Streamlit decision support app (8 pages, cost model, priority matrix)
 ├── api/
 │   └── main.py         # FastAPI REST API (3 endpoints)
 │   └── model/
@@ -271,7 +301,8 @@ ProcessPath_AI/
 | xgboost | 3.x | Gradient boosting classifier |
 | shap | 0.52 | Feature attribution (TreeExplainer) |
 | lifelines | ≥0.30 | Survival analysis (Kaplan-Meier, Cox PH) |
-| matplotlib | ≥3.7 | All figures |
+| matplotlib | ≥3.7 | Static figures (notebooks + app) |
+| plotly | ≥5.20 | Interactive charts in app (priority matrix, cost waterfall) |
 
 ---
 
