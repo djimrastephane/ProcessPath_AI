@@ -1,8 +1,10 @@
 # ProcessPath_AI
 
-Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck analysis, conformance checking, SHAP-explained early warning model, and temporal cross-validation.
+End-to-end process mining on a complex multi-stage approval and reimbursement workflow — bottleneck analysis, conformance checking, SHAP-explained early warning model, survival analysis, and root cause analysis.
 
-**Dataset:** 7,065 cases · 86,581 events · 51 activities · 18 months (TU/e, 2017–2018)
+> **The system identifies high-risk cases before completion, enabling targeted intervention and reduced cycle time.**
+
+**Data:** 7,065 cases · 86,581 events · 51 activities · 18 months (BPI Challenge 2020, TU/e)
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://processpathai-fejiac7urktgbcvbbwylhd.streamlit.app)
 
@@ -17,12 +19,25 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 | 991 cases (14%) permanently stuck | Last event is `Send Reminder` — median duration 134d vs 63d for resolved cases |
 | 17.1% travel-ordering violations | 746 Type A (departed before permit submitted), 583 Type B (departed before approval) |
 | Scheduling dominates duration | 69% of case duration is voluntary employee scheduling, not admin processing |
-| Early warning model at k=8 events | AUC **0.810** (leakage-free) — deployable at `Permit FINAL_APPROVED` |
+| **Deployable early warning model** — k=8 events | AUC **0.810** (leakage-free, temporal CV) — triggers at `Permit FINAL_APPROVED` |
+| Retrospective explanatory model — complete features | AUC **0.967** using full process information (not deployable — future leakage) |
 | Data drift confirmed | `elapsed_days` feature halved from 2017Q1 → 2018Q4; k-fold overstates AUC by +0.048 |
 | Temporal leakage identified & corrected | `elapsed_days` alone achieves AUC 0.833 — excluded from deployed model (Notebook 10) |
 | Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
 | Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
-| Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and n_events are dominant drivers (Notebook 13) |
+| Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and event count are dominant drivers (Notebook 13) |
+
+---
+
+## Potential applications
+
+The methodology is domain-agnostic. The same pipeline applies directly to:
+
+- **Maintenance work orders** — predict overdue orders, identify bottleneck approval steps
+- **Procurement workflows** — flag purchase requests at risk of SLA breach
+- **Drilling approvals** — early warning on permits likely to stall at regulatory stages
+- **Intervention planning** — estimate remaining time and survival probability for field operations
+- **Asset integrity workflows** — root cause analysis on inspection deferral patterns
 
 ---
 
@@ -37,7 +52,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 03 | `03_process_discovery.ipynb` | Inductive Miner and Heuristics Miner Petri nets |
 | 04 | `04_bottleneck_analysis.ipynb` | Waiting/service time split, stuck cases, scheduling vs admin delay |
 | 05 | `05_conformance_analysis.ipynb` | Token replay fitness, travel-ordering violations by department |
-| 06 | `06_predictive_analytics.ipynb` | XGBoost / RF / LogReg — AUC 0.974 on complete features |
+| 06 | `06_predictive_analytics.ipynb` | XGBoost / RF / LogReg — AUC 0.967 on complete features (retrospective) |
 | 07 | `07_shap_prefix.ipynb` | SHAP explanations + prefix-based early warning (k=1–20) |
 | 08 | `08_temporal_cv.ipynb` | Temporal cross-validation, optimism bias, feature drift, concept drift |
 | 09 | `09_final_report.ipynb` | 6-panel dashboard, priority matrix, 5 findings, 5 recommendations |
@@ -156,10 +171,10 @@ ProcessPath_AI/
 │   ├── inspect_log.py
 │   └── process_summary.py
 ├── outputs/
-│   ├── figures/        # 51+ PNG charts (pre-computed)
-│   └── tables/         # 32+ CSV tables (pre-computed)
+│   ├── figures/        # 58+ PNG charts (pre-computed)
+│   └── tables/         # 40+ CSV tables (pre-computed)
 ├── app/
-│   ├── app.py          # Streamlit dashboard (5 pages)
+│   ├── app.py          # Streamlit dashboard (7 pages)
 │   └── model/
 │       ├── prefix_k8.joblib           # Early warning classifier (AUC 0.810)
 │       ├── remaining_time_k8.joblib   # Remaining time regressor (MAE 12.4d)
@@ -182,6 +197,7 @@ ProcessPath_AI/
 | scikit-learn | ≥1.3 | Preprocessing, CV, metrics |
 | xgboost | 3.x | Gradient boosting classifier |
 | shap | 0.52 | Feature attribution (TreeExplainer) |
+| lifelines | ≥0.30 | Survival analysis (Kaplan-Meier, Cox PH) |
 | matplotlib | ≥3.7 | All figures |
 
 ---
