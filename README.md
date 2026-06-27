@@ -26,7 +26,7 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 | Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
 | Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
 | Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and event count are dominant drivers (Notebook 13) |
-| **Transferability — BPIC 2017 loan applications** | Same pipeline on 31,509 loans · 475K events: early warning AUC **0.647** at k=8; signal concentrates at offer-creation stage (k=10+, AUC 0.851) vs permit workflow where signal is distributed from event 1 (Notebook 14) |
+| **Cross-domain transferability — BPIC 2017 loan applications** | Same pipeline on 31,509 loans · 475K events. Workflow predictability varies by domain: permit process is predictable from event 1; loan outcome remains uncertain until credit decision stage (k≈10, AUC jumps 0.647 → 0.851). Curves reflect process structure, not model superiority (Notebook 14) |
 
 ### Early warning performance vs prefix length
 
@@ -38,7 +38,7 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 
 ![Transfer AUC curve](outputs/figures/transfer_auc_curve.png)
 
-*Same pipeline on two domains: permit workflow (BPIC 2020) vs loan applications (BPIC 2017). Signal concentrates at the offer-creation stage in loan workflows; permit workflows carry predictive information from event 1.*
+*Workflow predictability varies substantially across domains. The permit process becomes deterministic after a small number of events (routing signals present from event 1), whereas loan applications remain uncertain until the credit decision stage (k≈10, when offer-creation events enter the prefix). Note: feature sets, targets, and validation schemes differ — curves reflect process structure, not model superiority.*
 
 ### SHAP feature importance — violation prediction (XGBoost AUC 0.956)
 
