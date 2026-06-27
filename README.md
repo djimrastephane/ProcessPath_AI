@@ -34,6 +34,12 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 
 *AUC rises from 0.65 at the first event to 0.81 (leakage-free) by event 8 — well before the median case length of 11 events.*
 
+### Cross-domain transferability — AUC vs prefix length
+
+![Transfer AUC curve](outputs/figures/transfer_auc_curve.png)
+
+*Same pipeline on two domains: permit workflow (BPIC 2020) vs loan applications (BPIC 2017). Signal concentrates at the offer-creation stage in loan workflows; permit workflows carry predictive information from event 1.*
+
 ### SHAP feature importance — violation prediction (XGBoost AUC 0.956)
 
 ![SHAP beeswarm — violation root cause](outputs/figures/violation_rca_shap.png)
@@ -144,6 +150,55 @@ streamlit run app/app.py
 
 ---
 
+## REST API (FastAPI)
+
+A production-ready prediction API wrapping all three deployed models.
+
+**Run locally:**
+```bash
+pip install -r requirements.txt
+uvicorn api.main:app --reload
+# → http://127.0.0.1:8000/docs  (Swagger UI, auto-generated)
+```
+
+**Docker:**
+```bash
+docker build -t processpathai .
+docker run -p 8000:8000 processpathai
+```
+
+**Endpoints:**
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness check — confirms all three models are loaded |
+| `GET` | `/models` | Model metadata: type, AUC, MAE, concordance, feature counts |
+| `POST` | `/predict` | Full case prediction — see schema below |
+
+**Example request:**
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "n_events": 8, "elapsed_days": 12.5,
+    "n_rejections": 1, "n_reminders": 0, "n_approvals": 2,
+    "case_start_month": 3, "case_start_dow": 1,
+    "has_send_reminder": false, "has_final_approved": false,
+    "has_any_rejection": true, "has_any_approval": true
+  }'
+```
+
+**Example response:**
+```json
+{
+  "early_warning":  { "probability_late": 0.41, "risk_level": "MEDIUM", "model_auc": 0.81 },
+  "remaining_time": { "point_estimate_days": 10.0, "p10_days": 3.8, "p50_days": 10.0, "p90_days": 47.0 },
+  "survival":       { "prob_complete_by_90d": 0.69, "median_survival_days": 65.4, "concordance_index": 0.814 }
+}
+```
+
+---
+
 ## Running the notebooks
 
 ### Register the kernel (once)
@@ -189,6 +244,8 @@ ProcessPath_AI/
 │   └── tables/         # 45+ CSV tables (pre-computed)
 ├── app/
 │   ├── app.py          # Streamlit dashboard (7 pages)
+├── api/
+│   └── main.py         # FastAPI REST API (3 endpoints)
 │   └── model/
 │       ├── prefix_k8.joblib           # Early warning classifier (AUC 0.810)
 │       ├── remaining_time_k8.joblib   # Remaining time regressor (MAE 12.4d)
