@@ -12,6 +12,31 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 
 ---
 
+## Dashboard screenshots
+
+### Activity Impact — impact score ranking with intervention recommendations
+![Activity Impact](outputs/screenshots/02_activity_impact.png)
+
+### Value-Stream Analysis — transitions coloured by type (scheduling · admin · productive · escalation)
+![Value-Stream Analysis](outputs/screenshots/03_value_stream.png)
+
+### Department Impact — business table with delay days and cost in €
+![Department Impact](outputs/screenshots/04_department_impact.png)
+
+### Avoidable Delay & Cost Impact — estimated annual savings, live cost model
+![Avoidable Delay and Cost](outputs/screenshots/05_avoidable_delay_cost.png)
+
+### Priority Matrix — Act Now / Investigate / Monitor / Ignore quadrants
+![Priority Matrix](outputs/screenshots/06_priority_matrix.png)
+
+### Process Variants — frequency, duration, stuck rate, path inspector
+![Process Variants](outputs/screenshots/07_process_variants.png)
+
+### Violation Root Cause — rejection paradox analysis
+![Rejection Paradox](outputs/screenshots/08_rejection_paradox.png)
+
+---
+
 ## Results summary
 
 | Finding | Detail |
