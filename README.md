@@ -26,6 +26,8 @@ End-to-end process mining on a complex multi-stage approval and reimbursement wo
 | Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
 | Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
 | Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and event count are dominant drivers (Notebook 13) |
+| Rejection paradox — N rejections is protective | 1-rejection cases: 98.1% violation rate. Zero-rejection violators: submitted permits (99.2%) but skipped `Permit APPROVED by ADMINISTRATION` (44% vs 100% in compliant cases). SHAP direction is a conditional interaction, not a marginal effect (Notebook 13, §5) |
+| Lead time is not the problem | Zero-rejection violators submit permits **earlier** (median 35d vs 16d). Administration approves in **0 days** when engaged. Violation rate increases with lead time — the issue is a routing/awareness gap, not insufficient lead time (Notebook 13, §6) |
 | **Cross-domain transferability — BPIC 2017 loan applications** | Same pipeline on 31,509 loans · 475K events. Workflow predictability varies by domain: permit process is predictable from event 1; loan outcome remains uncertain until credit decision stage (k≈10, AUC jumps 0.647 → 0.851). Curves reflect process structure, not model superiority (Notebook 14) |
 
 ### Early warning performance vs prefix length
@@ -78,7 +80,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 10 | `10_leakage_calibration.ipynb` | Leakage audit, ablation study, calibration (Brier score, reliability diagram) |
 | 11 | `11_remaining_time.ipynb` | Remaining time regression — XGBoost + quantile P10/P50/P90, temporal CV, SHAP |
 | 12 | `12_survival_analysis.ipynb` | Survival analysis — Kaplan-Meier, log-rank tests, Cox PH model, risk groups |
-| 13 | `13_violation_root_cause.ipynb` | Violation root cause — decision tree rules, XGBoost, SHAP, department risk exposure |
+| 13 | `13_violation_root_cause.ipynb` | Violation root cause — decision tree rules, XGBoost, SHAP, rejection paradox, lead time analysis |
 | 14 | `14_transfer_bpic2017.ipynb` | Transferability — full pipeline on BPIC 2017 loan applications; cross-domain AUC comparison |
 
 ---
@@ -240,8 +242,8 @@ ProcessPath_AI/
 │   ├── inspect_log.py
 │   └── process_summary.py
 ├── outputs/
-│   ├── figures/        # 63+ PNG charts (pre-computed)
-│   └── tables/         # 45+ CSV tables (pre-computed)
+│   ├── figures/        # 70+ PNG charts (pre-computed)
+│   └── tables/         # 50+ CSV tables (pre-computed)
 ├── app/
 │   ├── app.py          # Streamlit dashboard (7 pages)
 ├── api/
