@@ -26,7 +26,7 @@ st.sidebar.title("⚙️ ProcessPath_AI")
 st.sidebar.caption("BPI Challenge 2020 · TU/e Travel Permits")
 page = st.sidebar.radio(
     "Navigate",
-    ["Overview", "Bottlenecks", "Conformance", "Early Warning", "Remaining Time", "Survival Analysis"],
+    ["Overview", "Bottlenecks", "Conformance", "Early Warning", "Remaining Time", "Survival Analysis", "Violation Root Cause"],
     index=0,
 )
 st.sidebar.markdown("---")
@@ -637,3 +637,92 @@ elif page == "Survival Analysis":
         "these are the cases most likely to get permanently stuck. "
         "Low-risk cases (green) complete quickly with almost no censoring."
     )
+
+# ══════════════════════════════════════════════════════════════════════════
+# PAGE 7 — VIOLATION ROOT CAUSE
+# ══════════════════════════════════════════════════════════════════════════
+elif page == "Violation Root Cause":
+    st.title("Violation Root Cause Analysis")
+    st.caption(
+        "17.1% of cases have a travel-ordering violation — departed before permit submitted (Type A) "
+        "or before approval (Type B). This page identifies which departments, budgets, and case "
+        "characteristics drive those violations."
+    )
+
+    rca_summ  = load_table("violation_rca_summary.csv")
+    rca_dept  = load_table("violation_rca_by_department.csv")
+    rca_segs  = load_table("violation_rca_segments.csv")
+
+    dt_auc  = rca_summ["dt_cv_auc"].iloc[0]
+    xgb_auc = rca_summ["xgb_cv_auc"].iloc[0]
+    n_vio   = int(rca_summ["n_violations"].iloc[0])
+    n_a     = int(rca_summ["n_type_a"].iloc[0])
+    n_b     = int(rca_summ["n_type_b"].iloc[0])
+    top_dept      = rca_summ["top_risk_dept"].iloc[0]
+    top_dept_rate = rca_summ["top_risk_dept_rate"].iloc[0]
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+    col1.metric("Total violations",   f"{n_vio:,}",  "17.1% of cases", delta_color="inverse")
+    col2.metric("Type A",             f"{n_a:,}",    "departed before submit", delta_color="inverse")
+    col3.metric("Type B",             f"{n_b:,}",    "departed before approval", delta_color="inverse")
+    col4.metric("Decision tree AUC",  dt_auc,        help="5-fold CV, depth=4 — interpretable rules")
+    col5.metric("XGBoost AUC",        xgb_auc,       help="5-fold CV — best predictive performance")
+
+    st.markdown("---")
+    st.subheader("Violation Rate by Department, Budget & Season")
+    st.image(str(F / "violation_rca_distributions.png"), use_container_width=True)
+    st.caption(
+        "Left: red bars = departments above the 17.1% baseline with 95% CI. "
+        "Centre: violation rate rises with budget quartile — higher-budget trips are more likely to violate. "
+        "Right: Q1 cases have the highest violation rate, suggesting year-start scheduling pressure."
+    )
+
+    st.markdown("---")
+    col_l, col_r = st.columns([3, 2])
+    with col_l:
+        st.subheader("Department Risk Exposure")
+        st.image(str(F / "violation_rca_dept_exposure.png"), use_container_width=True)
+        st.caption(
+            "Bar = absolute violation count (where to intervene for most impact). "
+            "Dot = violation rate (where behaviour is worst). "
+            f"Highest-volume violator: **{top_dept}** ({top_dept_rate} rate)."
+        )
+    with col_r:
+        st.subheader("Department breakdown")
+        st.dataframe(
+            rca_dept.rename(columns={"dept": "Department", "n": "Cases",
+                                     "vio": "Violations", "rate": "Rate", "ci": "±95% CI"})
+            .sort_values("Rate", ascending=False)
+            .style.format({"Rate": "{:.1%}", "±95% CI": "{:.3f}"}),
+            use_container_width=True,
+        )
+
+    st.markdown("---")
+    st.subheader("Decision Tree — Interpretable Rules (depth=4)")
+    st.image(str(F / "violation_rca_decision_tree.png"), use_container_width=True)
+    st.caption(
+        f"Each leaf shows the violation proportion. CV AUC = {dt_auc}. "
+        "Orange/red leaves are high-risk segments — the split features identify the strongest "
+        "case-level predictors of travel-ordering violations."
+    )
+
+    st.markdown("---")
+    st.subheader("SHAP Feature Importance (XGBoost)")
+    st.image(str(F / "violation_rca_shap.png"), use_container_width=True)
+    st.caption(
+        f"XGBoost CV AUC = {xgb_auc}. Features ranked by mean |SHAP value|. "
+        "Red = high feature value pushes toward violation; blue = low value. "
+        "Duration and department are consistently the dominant drivers."
+    )
+
+    st.markdown("---")
+    with st.expander("Decision tree leaf segments (high → low violation rate)"):
+        st.dataframe(
+            rca_segs.style.format({
+                "violation_rate": "{:.1%}",
+                "pct_of_all": "{:.1%}",
+                "avg_duration": "{:.0f}",
+                "avg_budget": "{:.0f}",
+            }),
+            use_container_width=True,
+        )

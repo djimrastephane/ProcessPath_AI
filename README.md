@@ -22,6 +22,7 @@ Process mining on the BPI Challenge 2020 Travel Permit dataset — bottleneck an
 | Temporal leakage identified & corrected | `elapsed_days` alone achieves AUC 0.833 — excluded from deployed model (Notebook 10) |
 | Remaining time prediction at k=8 events | MAE **12.4 days** — P10/P50/P90 quantile intervals, 80.8% coverage (Notebook 11) |
 | Survival analysis (all 7,065 cases) | KM median 72.4d · Cox concordance **0.814** · 14% right-censored (Notebook 12) |
+| Violation root cause analysis | 44.9% of cases have conformance violations (fitness < 1.0); DT AUC **0.876**, XGB AUC **0.956** — department, duration, and n_events are dominant drivers (Notebook 13) |
 
 ---
 
@@ -43,6 +44,7 @@ Run in order. Each notebook is self-contained and writes its outputs to `outputs
 | 10 | `10_leakage_calibration.ipynb` | Leakage audit, ablation study, calibration (Brier score, reliability diagram) |
 | 11 | `11_remaining_time.ipynb` | Remaining time regression — XGBoost + quantile P10/P50/P90, temporal CV, SHAP |
 | 12 | `12_survival_analysis.ipynb` | Survival analysis — Kaplan-Meier, log-rank tests, Cox PH model, risk groups |
+| 13 | `13_violation_root_cause.ipynb` | Violation root cause — decision tree rules, XGBoost, SHAP, department risk exposure |
 
 ---
 
@@ -148,7 +150,7 @@ Each notebook writes figures to `outputs/figures/` and tables to `outputs/tables
 
 ```
 ProcessPath_AI/
-├── notebooks/          # 12 analysis notebooks (run in order)
+├── notebooks/          # 13 analysis notebooks (run in order)
 ├── src/                # Shared loader and helper functions
 │   ├── load_event_log.py
 │   ├── inspect_log.py

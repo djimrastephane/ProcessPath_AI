@@ -1,0 +1,2 @@
+n_cases,n_violations,violation_rate,n_type_a,n_type_b,dt_cv_auc,xgb_cv_auc,top_risk_dept,top_risk_dept_rate
+7065,3174,44.9%,746,583,0.876,0.956,,44.9%
