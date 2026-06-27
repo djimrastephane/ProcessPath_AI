@@ -6,3 +6,4 @@ scikit-learn>=1.3
 xgboost>=3.0
 shap>=0.52
 joblib>=1.3
+lifelines>=0.30
